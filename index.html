@@ -88,6 +88,8 @@
           <h2>Controller / Wheel</h2>
           <div class="pad-status"></div>
           <div class="settings">
+            <label>Graphics quality
+              <select class="set-quality"><option value="auto">Auto (adapts to your PC)</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="ultra">Ultra</option></select></label>
             <label>Device type
               <select class="set-type"><option value="auto">Auto-detect</option><option value="yes">Steering wheel</option><option value="no">Gamepad</option></select></label>
             <label>Wheel sensitivity <span class="wheel-val"></span><input type="range" class="set-wheel" min="0.5" max="4" step="0.1"></label>
@@ -121,6 +123,8 @@
           <h2>Controller / Wheel</h2>
           <div class="pad-status"></div>
           <div class="settings">
+            <label>Graphics quality
+              <select class="set-quality"><option value="auto">Auto (adapts to your PC)</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="ultra">Ultra</option></select></label>
             <label>Device type
               <select class="set-type"><option value="auto">Auto-detect</option><option value="yes">Steering wheel</option><option value="no">Gamepad</option></select></label>
             <label>Wheel sensitivity <span class="wheel-val"></span><input type="range" class="set-wheel" min="0.5" max="4" step="0.1"></label>
@@ -155,9 +159,12 @@
   <!-- ===================== Summary ===================== -->
   <div id="summary" class="screen hidden"><div class="panel" id="summary-body"></div></div>
 
-  <script src="vendor/three.min.js"></script>
+  <script src="vendor/three-bundle.min.js"></script>
+  <script src="assets/hdri-city.js"></script>
   <script src="js/util.js"></script>
   <script src="js/input.js"></script>
+  <script src="js/textures.js"></script>
+  <script src="js/graphics.js"></script>
   <script src="js/audio.js"></script>
   <script src="js/models.js"></script>
   <script src="js/world.js"></script>

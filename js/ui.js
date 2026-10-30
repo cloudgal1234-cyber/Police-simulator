@@ -358,6 +358,9 @@
     [sens, mouse, inv, type].forEach((el) => { el.oninput = upd; el.onchange = upd; });
     upd();
     root.querySelector('.btn-cal').onclick = () => calib.open();
+    const q = root.querySelector('.set-quality');
+    q.value = s.quality || 'auto';
+    q.onchange = () => { PD.Graphics.setQuality(q.value); document.querySelectorAll('.set-quality').forEach((o) => { o.value = q.value; }); };
   }
 
   // Calibration wizard: records steering axis and pedal channels from live data.

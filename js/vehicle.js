@@ -25,7 +25,7 @@
     this._n = {};
     this.circles = [{ x: 0, z: 0, r: 1.25 }, { x: 0, z: 0, r: 1.25 }];
 
-    this.light = new THREE.PointLight(0xff0000, 0, 18, 2);
+    this.light = new THREE.PointLight(0xff0000, 0, 22, 2);
     this.light.position.set(0, 2.2, 0);
     this.mesh.add(this.light);
   }
@@ -148,18 +148,20 @@
     // light bar
     this.lightT += dt;
     if (this.siren) {
-      const phase = Math.floor(this.lightT * 6) % 2;
-      u.lightRed.emissive.setHex(phase ? 0xff2222 : 0x220000);
-      u.lightBlue.emissive.setHex(phase ? 0x000022 : 0x2255ff);
-      this.light.color.setHex(phase ? 0xff2020 : 0x2050ff);
-      this.light.intensity = 2.2;
+      // double-flash pattern: red twice, then blue twice
+      const k = Math.floor(this.lightT * 10) % 8;
+      const red = k === 0 || k === 2, blue = k === 4 || k === 6;
+      u.lightRed.emissiveIntensity = red ? 9 : 0.05;
+      u.lightBlue.emissiveIntensity = blue ? 12 : 0.05;
+      this.light.color.setHex(red ? 0xff2020 : 0x2050ff);
+      this.light.intensity = red || blue ? 40 : 0;
     } else {
-      u.lightRed.emissive.setHex(0x000000);
-      u.lightBlue.emissive.setHex(0x000000);
+      u.lightRed.emissiveIntensity = 0;
+      u.lightBlue.emissiveIntensity = 0;
       this.light.intensity = 0;
     }
     const braking = this._braking;
-    u.tail.forEach((t) => { t.material.emissive.setHex(braking ? 0xff2222 : 0x660000); });
+    u.tail.forEach((t) => { t.material.emissiveIntensity = braking ? 3 : 0.5; });
   };
 
   PD.PoliceCar = PoliceCar;

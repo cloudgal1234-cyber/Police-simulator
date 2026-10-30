@@ -19,29 +19,12 @@
     showSummary(info) { PD.UI.summary(info); },
   };
 
-  let renderer, scene, camera, sun, last = performance.now();
+  let renderer, scene, camera, last = performance.now();
 
   function init() {
     const canvas = $('game');
-    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xa8d8f0);
-    scene.fog = new THREE.Fog(0xa8d8f0, 140, 460);
-    camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
-
-    scene.add(new THREE.HemisphereLight(0xe8f4ff, 0x5a6b45, 0.7));
-    sun = new THREE.DirectionalLight(0xfff0d0, 0.85);
-    sun.castShadow = true;
-    sun.shadow.mapSize.set(2048, 2048);
-    const sc = sun.shadow.camera;
-    sc.left = -70; sc.right = 70; sc.top = 70; sc.bottom = -70; sc.near = 10; sc.far = 400;
-    sun.shadow.bias = -0.0006;
-    scene.add(sun, sun.target);
+    const gfx = PD.Graphics.init(canvas);
+    renderer = gfx.renderer; scene = gfx.scene; camera = gfx.camera;
 
     G.scene = scene; G.camera = camera; G.renderer = renderer;
     G.world = new PD.World(scene);
@@ -63,12 +46,6 @@
     canvas.addEventListener('click', () => {
       if (G.mode === 'foot' && G.uiMode === 'play' && !document.pointerLockElement && canvas.requestPointerLock) canvas.requestPointerLock();
     });
-    window.addEventListener('resize', () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-
     requestAnimationFrame(frame);
   }
 
@@ -219,6 +196,7 @@
       PD.UI.toast('Watch out for pedestrians! (−50)', 'bad');
     }
 
+    G.world.update(dt);
     G.cases.update(dt);
     G.combat.update(dt, C, active && G.mode === 'foot' && player.armed && G.downT <= 0, G.aiming);
     if (G.mode === 'foot' && player.health <= 0 && G.downT <= 0) playerDown();
@@ -235,8 +213,8 @@
       G.camYaw = PD.dampAngle(G.camYaw, car.heading, 3.5, dt);
       const fx = Math.sin(G.camYaw), fz = Math.cos(G.camYaw);
       if (G.camMode === 0) {
-        const dist = 8.5 + Math.min(4, Math.abs(car.speed) * 0.09);
-        camPos.set(car.pos.x - fx * dist, car.pos.y + 3.4, car.pos.z - fz * dist);
+        const dist = 7.2 + Math.min(3, Math.abs(car.speed) * 0.08);
+        camPos.set(car.pos.x - fx * dist, car.pos.y + 2.55, car.pos.z - fz * dist);
         look.set(car.pos.x + fx * 4, car.pos.y + 1.3, car.pos.z + fz * 4);
       } else {
         const hx = Math.sin(car.heading), hz = Math.cos(car.heading);
@@ -248,7 +226,7 @@
     } else {
       head.set(p.pos.x, p.pos.y + (G.aiming ? 1.75 : 1.62), p.pos.z);
       const aim = G.aiming;
-      const dist = aim ? 2.7 : 4.4, shoulder = aim ? 1.05 : 0.45;
+      const dist = aim ? 2.4 : 3.6, shoulder = aim ? 0.85 : 0.4;
       const cp = Math.cos(p.camPitch), sp = Math.sin(p.camPitch);
       const fx = Math.sin(p.camYaw) * cp, fy = -sp, fz = Math.cos(p.camYaw) * cp;
       const rx = -Math.cos(p.camYaw), rz = Math.sin(p.camYaw);
@@ -274,10 +252,7 @@
     camera.updateProjectionMatrix();
 
     // shadows follow the action
-    const focus = G.mode === 'drive' ? car.pos : p.pos;
-    sun.position.set(focus.x + 70, 150, focus.z + 45);
-    sun.target.position.set(focus.x, 0, focus.z);
-    sun.target.updateMatrixWorld();
+    PD.Graphics.follow(G.mode === 'drive' ? car.pos : p.pos);
   }
 
   // ------------------------------------------------------------ loop
@@ -298,7 +273,7 @@
     updateCamera(frozen && G.uiMode === 'welcome' ? 0 : dt);
     if (G.uiMode === 'welcome') orbitWelcome(now);
     if (G.uiMode !== 'welcome') PD.UI.hud(dt);
-    renderer.render(scene, camera);
+    PD.Graphics.render(dt);
   }
 
   // slow orbit around the cruiser behind the welcome screen

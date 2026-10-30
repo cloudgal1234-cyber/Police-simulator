@@ -73,6 +73,11 @@
     const fx = Math.sin(this.heading), fz = Math.cos(this.heading);
     let want = this.maxSpeed;
     if (Math.abs(PD.wrapAngle(target - this.heading)) > 0.5) want *= 0.5; // slow in turns
+    // stop at red / yellow traffic lights (stop line = approach waypoint)
+    if (wp.turn && this.world.hasSignal(this.i, this.j) && dist < 22) {
+      const st = this.world.signal(this.dir[0] !== 0);
+      if (st === 'r' || (st === 'y' && dist > 7)) want = Math.min(want, Math.max(0, (dist - 3) * 0.9));
+    }
     for (let k = 0; k < obstacles.length; k++) {
       const o = obstacles[k];
       if (o === this.circle) continue;

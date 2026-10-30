@@ -2,6 +2,8 @@
 
 A playable 3D police game that runs in a desktop browser. It uses Three.js and plain JavaScript, with no build step and nothing to install.
 
+**Graphics:** physically based materials, a physical sky with HDR city lighting and reflections (glass, car paint), soft sun shadows, filmic (ACES) tone mapping, ambient occlusion (GTAO), bloom on emergency lights and SMAA anti-aliasing. Textures (asphalt, brick, concrete, plaster, glass curtain walls, grass, foliage) are generated procedurally with normal and roughness maps.
+
 You drive a police cruiser around a low-poly city and answer dispatch calls. At each crime scene you get out of the car, look at evidence, question witnesses and accuse the culprit. Two of the five cases end in a short shootout with suspects who use cover.
 
 ![Core loop](https://img.shields.io/badge/loop-patrol%20→%20dispatch%20→%20investigate%20→%20arrest-1f3a68)
@@ -10,7 +12,7 @@ You drive a police cruiser around a low-poly city and answer dispatch calls. At 
 
 ## Running it locally
 
-You need a modern desktop browser: **Chrome or Edge** (recommended) or Firefox. The game includes its own copy of Three.js in `vendor/`, so it works without an internet connection.
+You need a modern desktop browser: **Chrome or Edge** (recommended) or Firefox. The game includes its own copies of Three.js and its lighting data, so it works without an internet connection.
 
 ### Option A: use a local web server (recommended, works best with a steering wheel)
 
@@ -116,9 +118,12 @@ After case 5, the roster starts again from the beginning.
 ```
 index.html          Page layout: HUD, dialogue, menus, script tags
 css/style.css       All UI styling
-vendor/three.min.js Three.js r149 (MIT) bundled locally, so the game works offline
+vendor/three-bundle.min.js Three.js r160 + post-processing add-ons (MIT) in one file, so the game works offline
+assets/hdri-city.js CC0 city HDRI (Poly Haven, via @pmndrs/assets) for lighting & reflections
 js/
   util.js           Namespace, math, seeded RNG, circle/box collision, raycasts
+  textures.js       Procedural PBR textures (albedo / normal / roughness)
+  graphics.js       Renderer, sky, sun & shadows, HDR environment, post-processing, quality presets
   input.js          Keyboard + mouse + Gamepad API (wheel detection, calibration data, deadzones)
   audio.js          Procedural WebAudio: engine, siren, gunshots, UI sounds (no audio files)
   models.js         Low-poly procedural people, cars and props
@@ -146,8 +151,16 @@ Add an object to `PD.CASES` in `js/cases-data.js`. Positions are relative to the
 
 Special blocks are mapped to block types in `SPECIAL` at the top of `js/world.js`.
 
-## Performance notes
+## Graphics quality & performance
 
-- All buildings are merged into a single mesh (one draw call). Trees and street lamps are instanced.
-- One shadow-casting sun follows the player with a tight shadow frustum.
-- The pixel ratio is capped at 1.75. If an older laptop struggles, lower it in `js/main.js` (`setPixelRatio`).
+Set **Graphics quality** on the welcome screen or in the pause menu:
+
+| Preset | What you get |
+|---|---|
+| **Auto** (default) | Starts at High, then drops a level if the frame rate stays under 40 fps |
+| Low | 1024 shadows, no ambient occlusion or bloom |
+| Medium | 2048 soft shadows, bloom, SMAA |
+| High | 4096 soft shadows, GTAO ambient occlusion, bloom, SMAA |
+| Ultra | High at 1.5× render resolution |
+
+A dedicated graphics card is recommended for High and Ultra. Wall geometry is batched per material, and windows, trees, lamps, traffic lights and wheels are instanced or merged, so the whole city draws in a few dozen calls.
