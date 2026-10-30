@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Precinct 12 — Patrol & Detective Simulator</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <!-- ===================== HUD ===================== -->
+  <div id="hud" class="hidden">
+    <div id="objective">
+      <div class="label">OBJECTIVE</div>
+      <div id="obj-title"></div>
+      <div id="obj-sub"></div>
+    </div>
+
+    <div id="scorebox">
+      <div>SCORE <b id="score">0</b></div>
+      <div>CASES CLOSED <b id="cases">0</b></div>
+      <div id="rank">Rookie Officer</div>
+    </div>
+
+    <div id="compass" class="hidden">
+      <div id="compass-arrow">▲</div>
+      <div id="compass-dist"></div>
+    </div>
+
+    <div id="minimap-wrap"><canvas id="minimap" width="220" height="220"></canvas></div>
+
+    <div id="speedo">
+      <div class="speed-row"><span id="speed-val">0</span><span class="unit">km/h</span><span id="gear">N</span></div>
+      <div class="speed-track"><i id="speed-bar"></i></div>
+      <div id="siren-ind">● SIREN</div>
+    </div>
+
+    <div id="health" class="hidden"><div class="hp-label">HEALTH</div><div class="hp-track"><i id="health-fill"></i></div></div>
+    <div id="ammo" class="hidden"></div>
+    <div id="crosshair" class="hidden"><i></i><i></i><i></i><i></i></div>
+    <div id="hitmarker">✕</div>
+    <div id="prompt" class="hidden"></div>
+    <div id="radio" class="hidden"></div>
+    <div id="toasts"></div>
+    <div id="pad-ind" class="hidden"></div>
+    <div id="lock-hint" class="hidden">Click the game to enable mouse look</div>
+    <div id="damage"></div>
+    <div id="down-msg" class="hidden">YOU'VE BEEN HIT<br><small>Officer down — backup is on the way…</small></div>
+  </div>
+
+  <!-- ===================== Dialogue ===================== -->
+  <div id="dialogue" class="hidden">
+    <div class="dl-head"><span id="dl-name"></span><span id="dl-role"></span></div>
+    <div id="dl-text"></div>
+    <div id="dl-options"></div>
+    <div class="dl-hint">1-9 / ↑↓ + Enter / click · Controller: D-pad + A · B = Goodbye · ★ = new lead from evidence</div>
+  </div>
+
+  <!-- ===================== Inspect ===================== -->
+  <div id="inspect" class="hidden">
+    <div class="ins-kind">🔍 EVIDENCE COLLECTED</div>
+    <h2 id="ins-title"></h2>
+    <p id="ins-text"></p>
+    <button class="btn" id="ins-close">Add to notebook</button>
+    <div class="hint">[E] / [Enter] / [A]</div>
+  </div>
+
+  <div id="notebook" class="hidden"></div>
+  <div id="bigmap" class="hidden"><canvas id="bigmap-canvas" width="720" height="720"></canvas><div class="hint">[M] / [View] to close · Blue = objective</div></div>
+
+  <!-- ===================== Welcome ===================== -->
+  <div id="welcome" class="screen">
+    <div class="panel wide">
+      <div class="title-row">
+        <div class="badge">★</div>
+        <div>
+          <h1>PRECINCT 12</h1>
+          <div class="subtitle">Patrol &amp; Detective Simulator — prototype</div>
+        </div>
+      </div>
+      <p class="intro">You are Officer Reyes, on shift in a small city. <b>Drive</b> your cruiser to dispatch calls, <b>step out</b> at crime scenes,
+        <b>inspect evidence</b> (◆ yellow markers), <b>question witnesses</b> (◆ blue markers) and <b>accuse the culprit</b> once you have enough evidence.
+        A few suspects won't come quietly — those cases end in a short, tactical standoff.</p>
+      <div class="cols">
+        <div class="col-main"><h2>Controls</h2><div class="controls-guide"></div></div>
+        <div class="col-side">
+          <h2>Controller / Wheel</h2>
+          <div class="pad-status"></div>
+          <div class="settings">
+            <label>Device type
+              <select class="set-type"><option value="auto">Auto-detect</option><option value="yes">Steering wheel</option><option value="no">Gamepad</option></select></label>
+            <label>Wheel sensitivity <span class="wheel-val"></span><input type="range" class="set-wheel" min="0.5" max="4" step="0.1"></label>
+            <label>Mouse sensitivity <span class="mouse-val"></span><input type="range" class="set-mouse" min="0.3" max="3" step="0.1"></label>
+            <label class="check"><input type="checkbox" class="set-invert"> Invert look Y</label>
+            <button class="btn btn-cal">🛞 Calibrate wheel &amp; pedals</button>
+          </div>
+          <div class="tips">
+            <b>Tips</b>
+            <ul>
+              <li>Follow the <span class="blue">blue GPS line</span> on the minimap.</li>
+              <li>Turn on the siren for a Code 3 response bonus.</li>
+              <li>★ dialogue options are new leads unlocked by evidence.</li>
+              <li>Your sidearm is only drawn during standoffs — use cover.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <button class="btn primary big" id="btn-start">START SHIFT</button>
+      <div class="hint">Press Enter / Space, or A on your controller</div>
+    </div>
+  </div>
+
+  <!-- ===================== Pause ===================== -->
+  <div id="pause" class="screen hidden">
+    <div class="panel wide">
+      <h1>PAUSED</h1>
+      <div class="cols">
+        <div class="col-main"><div class="controls-guide"></div></div>
+        <div class="col-side">
+          <h2>Controller / Wheel</h2>
+          <div class="pad-status"></div>
+          <div class="settings">
+            <label>Device type
+              <select class="set-type"><option value="auto">Auto-detect</option><option value="yes">Steering wheel</option><option value="no">Gamepad</option></select></label>
+            <label>Wheel sensitivity <span class="wheel-val"></span><input type="range" class="set-wheel" min="0.5" max="4" step="0.1"></label>
+            <label>Mouse sensitivity <span class="mouse-val"></span><input type="range" class="set-mouse" min="0.3" max="3" step="0.1"></label>
+            <label class="check"><input type="checkbox" class="set-invert"> Invert look Y</label>
+            <button class="btn btn-cal">🛞 Calibrate wheel &amp; pedals</button>
+          </div>
+        </div>
+      </div>
+      <button class="btn primary big" id="btn-resume">RESUME</button>
+      <div class="hint">Esc / P / Menu button</div>
+    </div>
+  </div>
+
+  <!-- ===================== Calibration ===================== -->
+  <div id="calib" class="screen hidden">
+    <div class="panel">
+      <h1>Wheel calibration</h1>
+      <h2 id="cal-title"></h2>
+      <p id="cal-text"></p>
+      <p id="cal-msg" class="warn"></p>
+      <div id="cal-live"></div>
+      <div class="row">
+        <button class="btn primary" id="cal-next">Next ▶</button>
+        <button class="btn" id="cal-cancel">Cancel</button>
+        <button class="btn" id="cal-reset">Reset to defaults</button>
+      </div>
+      <div class="hint">Enter / A = Next · Esc = Cancel. Calibration is saved per device in this browser.</div>
+    </div>
+  </div>
+
+  <!-- ===================== Summary ===================== -->
+  <div id="summary" class="screen hidden"><div class="panel" id="summary-body"></div></div>
+
+  <script src="vendor/three.min.js"></script>
+  <script src="js/util.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/models.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/vehicle.js"></script>
+  <script src="js/traffic.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/cases-data.js"></script>
+  <script src="js/case-manager.js"></script>
+  <script src="js/combat.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

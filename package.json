@@ -1,0 +1,10 @@
+{
+  "name": "precinct-12",
+  "version": "0.1.0",
+  "description": "3D police patrol & detective simulation prototype (Three.js, runs in the browser)",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "license": "MIT"
+}
