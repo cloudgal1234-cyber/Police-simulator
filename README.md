@@ -8,6 +8,8 @@ You drive a police cruiser around a low-poly city and answer dispatch calls. At 
 
 ![Core loop](https://img.shields.io/badge/loop-patrol%20→%20dispatch%20→%20investigate%20→%20arrest-1f3a68)
 
+> **Unreal Engine 5 version:** a higher-fidelity port (Lumen GI, virtual shadow maps, volumetric clouds, slots for photoreal characters and cars) lives in [`unreal/PrecinctTwelve`](unreal/PrecinctTwelve/README.md). See that README for setup.
+
 ---
 
 ## Running it locally
